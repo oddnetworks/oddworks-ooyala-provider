@@ -1,0 +1,26 @@
+{
+  "name": "oddworks-ooyala-provider",
+  "version": "0.0.0",
+  "description": "An Oddworks provider plugin for Ooyala APIs",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oddnetworks/oddworks-ooyala-provider.git"
+  },
+  "keywords": [
+    "Oddworks",
+    "Ooyala",
+    "Video",
+    "Source",
+    "Provider"
+  ],
+  "author": "Oddworks Inc.",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/oddnetworks/oddworks-ooyala-provider/issues"
+  },
+  "homepage": "https://github.com/oddnetworks/oddworks-ooyala-provider#readme"
+}
