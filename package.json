@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "jasmine": "^2.4.1",
+    "oddcast": "^2.1.0",
     "xo": "^0.16.0"
   },
   "repository": {

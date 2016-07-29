@@ -5,7 +5,7 @@ const Promise = require('bluebird');
 const request = require('request');
 
 const DEFAULTS = {
-	baseUrl: 'http://api.ooyala.com/',
+	baseUrl: 'http://api.ooyala.com',
 	sourceName: 'ooyala'
 };
 
@@ -29,10 +29,10 @@ exports.initialize = function (options) {
 	if (!bus || typeof bus !== 'object') {
 		throw new Error('oddworks-ooyala-provider requires an Oddcast Bus');
 	}
-	if (!apiKey || typeof apiKey === 'string') {
+	if (!apiKey || typeof apiKey !== 'string') {
 		throw new Error('oddworks-ooyala-provider requires an Ooyala secretKey key');
 	}
-	if (!secretKey || typeof secretKey === 'string') {
+	if (!secretKey || typeof secretKey !== 'string') {
 		throw new Error('oddworks-ooyala-provider requires an Ooyala secretKey key');
 	}
 
@@ -50,10 +50,11 @@ exports.createHandler = function (options) {
 	function makeRequest(params) {
 		return new Promise((resolve, reject) => {
 			request(params, (err, res, body) => {
-				debugger;
 				if (err) {
 					return reject(err);
 				}
+
+				// TODO: Parse response body as JSON
 				return resolve(body);
 			});
 		});
@@ -65,7 +66,7 @@ exports.createHandler = function (options) {
 		// const object = args.object;
 
 		const method = 'GET';
-		const path = `${PATH_PREFIX}/labels`;
+		const path = `${PATH_PREFIX}/labels/6c0040e4158b4e95b7563580459c9819/assets`;
 		const query = {
 			api_key: apiKey, // eslint-disable-line camelcase
 			expires: (60 + Math.floor(Date.now() / 1000)).toString()
