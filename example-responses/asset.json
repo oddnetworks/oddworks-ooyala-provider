@@ -1,0 +1,27 @@
+{
+  "asset_type": "remote_asset",
+  "created_at": "2016-07-29T05:31:26Z",
+  "description": "",
+  "duration": 77369,
+  "embed_code": "E1OTAxNTE6J1iCCeMoUk6rTDZoXl-EPf",
+  "external_id": null,
+  "name": "Ooyala Pulse Animation.mp4",
+  "preview_image_url": "http://cf.c.ooyala.com/VqbzAwNTE6_98ZWv-Lpe0Rk6iiPwf3RT/Ut_HKthATH4eww8X4xMDoxOjA4MTsiGN",
+  "status": "live",
+  "stream_urls": {
+    "flash": "http://cf.c.ooyala.com/VqbzAwNTE6_98ZWv-Lpe0Rk6iiPwf3RT/VqbzAwNTE6_98ZWv-Lpe0Rk6iiPwf3RT_1.f4m",
+    "iphone": null,
+    "ipad": null,
+    "itunes": null,
+    "source_file": null,
+    "smooth": null
+  },
+  "time_restrictions": null,
+  "updated_at": "2016-07-29T05:31:26Z",
+  "hosted_at": null,
+  "original_file_name": null,
+  "is_live_stream": false,
+  "publishing_rule_id": "c06085a0f98f48f68d608609502b20b0",
+  "ad_set_id": null,
+  "player_id": "efe1ffa281494aefbe12af13daff54d1"
+}
