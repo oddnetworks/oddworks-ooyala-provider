@@ -5,12 +5,11 @@
 const oddcast = require('oddcast');
 
 beforeAll(function () {
-	this.apiKey = process.env.API_KEY;
-	this.secretKey = process.env.SECRET_KEY;
-
 	this.createBus = function () {
 		const bus = oddcast.bus();
 		bus.requests.use({}, oddcast.inprocessTransport());
+		bus.commands.use({}, oddcast.inprocessTransport());
+		bus.events.use({}, oddcast.inprocessTransport());
 		return bus;
 	};
 });
