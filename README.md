@@ -46,14 +46,16 @@ To use them you send Oddcast commands to save a specification object:
 bus.sendCommand({role: 'catalog', cmd: 'setItemSpec'}, {
     channel: 'abc',
     type: 'collectionSpec',
-    source: 'ooyala-label-provider'
+    source: 'ooyala-label-provider',
+    label: {id: '123456'}
 });
 
 // To create a video based on a Backlot asset:
 bus.sendCommand({role: 'catalog', cmd: 'setItemSpec'}, {
     channel: 'abc',
     type: 'videoSpec',
-    source: 'ooyala-asset-provider'
+    source: 'ooyala-asset-provider',
+    asset: {external_id: '123456'}
 });
 ```
 
