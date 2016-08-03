@@ -83,6 +83,7 @@ All methods return a Promise.
 - `client.getChildLabels({labelId})`
 - `client.getAssetsByLabel({labelId})`
 - `client.getAsset({assetId})`
+- `client.getAssetStreams({assetId})`
 
 High Performance API
 --------------------
