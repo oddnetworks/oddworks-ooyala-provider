@@ -6,7 +6,7 @@ const Client = require('./lib/client');
 
 const REQUEST_METHODS = Object.create(null);
 REQUEST_METHODS.makeRequest = '{"path": "STRING"}';
-REQUEST_METHODS.getLabels = '{"labelId": "STRING"}';
+REQUEST_METHODS.getLabels = '{}';
 REQUEST_METHODS.getLabel = '{"labelId": "STRING"}';
 REQUEST_METHODS.getChildLabels = '{"labelId": "STRING"}';
 REQUEST_METHODS.getAssetsByLabel = '{"labelId": "STRING"}';
