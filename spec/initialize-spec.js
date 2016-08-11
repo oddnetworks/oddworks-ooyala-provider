@@ -43,20 +43,20 @@ describe('initialize', function () {
 
 		it('calls createLabelHandler', function () {
 			expect(provider.createLabelHandler).toHaveBeenCalledTimes(1);
-			expect(provider.createLabelHandler).toHaveBeenCalledWith(
-				bus,
-				result.client,
-				defaultCollectionTransform
-			);
+			const args = provider.createLabelHandler.calls.allArgs()[0];
+			expect(args[0]).toBe(bus);
+			expect(typeof args[1]).toBe('function');
+			expect(args[2]).toBe(result.client);
+			expect(args[3]).toBe(defaultCollectionTransform);
 		});
 
 		it('calls createAssetHandler', function () {
 			expect(provider.createAssetHandler).toHaveBeenCalledTimes(1);
-			expect(provider.createAssetHandler).toHaveBeenCalledWith(
-				bus,
-				result.client,
-				defaultAssetTransform
-			);
+			const args = provider.createAssetHandler.calls.allArgs()[0];
+			expect(args[0]).toBe(bus);
+			expect(typeof args[1]).toBe('function');
+			expect(args[2]).toBe(result.client);
+			expect(args[3]).toBe(defaultAssetTransform);
 		});
 
 		it('calls bus.queryHandler', function () {
