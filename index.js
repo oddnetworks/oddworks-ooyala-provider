@@ -30,12 +30,6 @@ exports.initialize = function (options) {
 	if (!bus || typeof bus !== 'object') {
 		throw new Error('oddworks-ooyala-provider requires an Oddcast Bus');
 	}
-	if (!apiKey || typeof apiKey !== 'string') {
-		throw new Error('oddworks-ooyala-provider requires an Ooyala apiKey key');
-	}
-	if (!secretKey || typeof secretKey !== 'string') {
-		throw new Error('oddworks-ooyala-provider requires an Ooyala secretKey key');
-	}
 
 	const collectionTransform = options.collectionTransform;
 	const assetTransform = options.assetTransform;
