@@ -249,4 +249,116 @@ describe('labelHandler', function () {
 			expect(client.getChildLabels).toHaveBeenCalledWith({labelId: 'foo'});
 		});
 	});
+
+	describe('with channel secrets', function () {
+		let client;
+		let setItemSpec;
+		let transform;
+		let result;
+		let error = null;
+		const label = {id: 'foo', name: 'LABEL'};
+		const spec = {
+			channel: 'abc',
+			type: 'collectionSpec',
+			id: 'spec-123',
+			label
+		};
+		const assets = [{title: 'VIDEO_1'}, {title: 'VIDEO_2'}];
+		const labels = [];
+		const collection = {title: 'COLLECTION'};
+
+		function getChannel() {
+			return Promise.resolve({
+				id: 'abc',
+				secrets: {
+					backlotApiKey: 'api-key-foo',
+					backlotSecretKey: 'api-secret-bar'
+				}
+			});
+		}
+
+		beforeAll(function (done) {
+			const bus = this.createBus();
+
+			// Mock the Oddworks setItemSpec command for the related assets (videos).
+			setItemSpec = jasmine
+				.createSpy('setItemSpec')
+				.and.returnValues(
+					Promise.resolve({type: 'videoSpec', resource: 'foo-123'}),
+					Promise.resolve({type: 'videoSpec', resource: 'bar-123'})
+				);
+
+			bus.commandHandler({role: 'catalog', cmd: 'setItemSpec'}, setItemSpec);
+
+			// Mock the Ooyala client methods.
+			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
+			spyOn(client, 'getLabel').and.returnValue(Promise.resolve(label));
+			spyOn(client, 'getAssetsByLabel').and.returnValue(Promise.resolve(assets));
+			spyOn(client, 'getChildLabels').and.returnValue(Promise.resolve(labels));
+
+			transform = jasmine.createSpy('transform').and.returnValue(collection);
+
+			const labelHandler = provider.createLabelHandler(bus, getChannel, client, transform);
+
+			return labelHandler({spec})
+				.then(res => {
+					result = res;
+				})
+				.catch(err => {
+					error = err;
+				})
+				.then(done);
+		});
+
+		it('has a result', function () {
+			expect(result.title).toBe('COLLECTION');
+		});
+
+		it('does not have an error', function () {
+			expect(error).toBe(null);
+		});
+
+		it('sends setItemSpec commands', function () {
+			expect(setItemSpec).toHaveBeenCalledTimes(2);
+			expect(setItemSpec).toHaveBeenCalledWith({
+				channel: 'abc',
+				type: 'videoSpec',
+				source: 'ooyala-asset-provider',
+				asset: assets[0]
+			});
+			expect(setItemSpec).toHaveBeenCalledWith({
+				channel: 'abc',
+				type: 'videoSpec',
+				source: 'ooyala-asset-provider',
+				asset: assets[1]
+			});
+		});
+
+		it('calls client.getLabel()', function () {
+			expect(client.getLabel).toHaveBeenCalledTimes(1);
+			expect(client.getLabel).toHaveBeenCalledWith({
+				labelId: 'foo',
+				apiKey: 'api-key-foo',
+				secretKey: 'api-secret-bar'
+			});
+		});
+
+		it('calls client.getAssetsByLabel()', function () {
+			expect(client.getAssetsByLabel).toHaveBeenCalledTimes(1);
+			expect(client.getAssetsByLabel).toHaveBeenCalledWith({
+				labelId: 'foo',
+				apiKey: 'api-key-foo',
+				secretKey: 'api-secret-bar'
+			});
+		});
+
+		it('calls client.getChildLabels()', function () {
+			expect(client.getChildLabels).toHaveBeenCalledTimes(1);
+			expect(client.getChildLabels).toHaveBeenCalledWith({
+				labelId: 'foo',
+				apiKey: 'api-key-foo',
+				secretKey: 'api-secret-bar'
+			});
+		});
+	});
 });
