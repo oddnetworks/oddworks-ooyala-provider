@@ -20,18 +20,21 @@ describe('labelHandler', function () {
 			label: {id: 'foo'}
 		};
 
+		function getChannel() {
+			return Promise.resolve({id: 'abc'});
+		}
+
 		beforeAll(function (done) {
 			const bus = this.createBus();
 
 			bus.observe({level: 'error'}, function (payload) {
 				event = payload;
-				done();
 			});
 
 			const client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
 			spyOn(client, 'getLabel').and.returnValue(Promise.resolve(null));
 
-			const labelHandler = provider.createLabelHandler(bus, client, noop);
+			const labelHandler = provider.createLabelHandler(bus, getChannel, client, noop);
 
 			return labelHandler({spec})
 				.then(res => {
@@ -39,6 +42,7 @@ describe('labelHandler', function () {
 				})
 				.catch(err => {
 					error = err;
+					done();
 				});
 		});
 
@@ -75,6 +79,10 @@ describe('labelHandler', function () {
 		const labels = [];
 		const collection = {title: 'COLLECTION'};
 
+		function getChannel() {
+			return Promise.resolve({id: 'abc'});
+		}
+
 		beforeAll(function (done) {
 			const bus = this.createBus();
 
@@ -96,7 +104,7 @@ describe('labelHandler', function () {
 
 			transform = jasmine.createSpy('transform').and.returnValue(collection);
 
-			const labelHandler = provider.createLabelHandler(bus, client, transform);
+			const labelHandler = provider.createLabelHandler(bus, getChannel, client, transform);
 
 			return labelHandler({spec})
 				.then(res => {
@@ -165,6 +173,10 @@ describe('labelHandler', function () {
 		const labels = [{name: 'LABEL_1'}, {name: 'LABEL_2'}];
 		const collection = {title: 'COLLECTION'};
 
+		function getChannel() {
+			return Promise.resolve({id: 'abc'});
+		}
+
 		beforeAll(function (done) {
 			const bus = this.createBus();
 
@@ -186,7 +198,7 @@ describe('labelHandler', function () {
 
 			transform = jasmine.createSpy('transform').and.returnValue(collection);
 
-			const labelHandler = provider.createLabelHandler(bus, client, transform);
+			const labelHandler = provider.createLabelHandler(bus, getChannel, client, transform);
 
 			return labelHandler({spec})
 				.then(res => {

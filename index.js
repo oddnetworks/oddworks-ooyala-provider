@@ -4,6 +4,9 @@ const Promise = require('bluebird');
 const Client = require('./lib/client');
 const defaultAssetTransform = require('./lib/default-asset-transform');
 const defaultCollectionTransform = require('./lib/default-collection-transform');
+const createChannelCache = require('./lib/create-channel-cache');
+const fetchLabelCollection = require('./lib/fetch-label-collection');
+const fetchBacklotAsset = require('./lib/fetch-backlot-asset');
 
 const DEFAULTS = {
 	baseUrl: 'http://api.ooyala.com',
@@ -36,14 +39,16 @@ exports.initialize = function (options) {
 
 	const client = new Client({bus, baseUrl, secretKey, apiKey});
 
+	const getChannel = createChannelCache(bus);
+
 	bus.queryHandler(
 		{role, cmd, source: 'ooyala-label-provider'},
-		exports.createLabelHandler(bus, client, collectionTransform)
+		exports.createLabelHandler(bus, getChannel, client, collectionTransform)
 	);
 
 	bus.queryHandler(
 		{role, cmd, source: 'ooyala-asset-provider'},
-		exports.createAssetHandler(bus, client, assetTransform)
+		exports.createAssetHandler(bus, getChannel, client, assetTransform)
 	);
 
 	return Promise.resolve({
@@ -52,14 +57,16 @@ exports.initialize = function (options) {
 	});
 };
 
-exports.createLabelHandler = function (bus, client, transform) {
+exports.createLabelHandler = function (bus, getChannel, client, transform) {
+	const getCollection = fetchLabelCollection(bus, client, transform);
+
 	// Called from Oddworks core via bus.query
 	// Expects:
 	//   args.spec.label.id
 	return function ooyalaLabelProvider(args) {
 		const spec = args.spec;
 		const labelId = (spec.label || {}).id;
-		const channel = spec.channel;
+		const channelId = spec.channel;
 
 		if (!labelId || typeof labelId !== 'string') {
 			throw new Error(
@@ -68,87 +75,23 @@ exports.createLabelHandler = function (bus, client, transform) {
 		}
 
 		// The Oddworks collection.
-		let collection = args.object;
+		const collection = args.object;
 
-		// First, get the label object from Ooyala.
-		return client.getLabel({labelId})
-			.then(label => {
-				if (label) {
-					// If the label object exists, cast it to an Oddworks collection.
-					collection = Object.assign({}, collection, transform(spec, label));
-
-					// Then check for assets (videos) which belong to this label, and
-					// check for child labels.
-					return Promise.all([
-						client.getAssetsByLabel({labelId}),
-						client.getChildLabels({labelId})
-					]);
-				}
-
-				const error = new Error(`Label not found for id "${labelId}"`);
-				error.code = 'LABEL_NOT_FOUND';
-
-				// Report the LABEL_NOT_FOUND error.
-				bus.broadcast({level: 'error'}, {
-					spec,
-					error,
-					code: error.code,
-					message: 'label not found'
-				});
-
-				// Return a rejection to short circuit the rest of the operation.
-				return Promise.reject(error);
-			})
-			.then(results => {
-				const assets = results[0];
-				const children = results[1];
-
-				if (assets && assets.length) {
-					// If there are any videos associated with this label, then fetch
-					// those too.
-					return Promise.all(assets.map(asset => {
-						return bus.sendCommand(
-							{role: 'catalog', cmd: 'setItemSpec'},
-							{channel, type: 'videoSpec', source: 'ooyala-asset-provider', asset}
-						);
-					}));
-				} else if (children && children.length) {
-					// Otherwise, attempt to fetch child labels, which will become child
-					// collections.
-					return Promise.all(children.map(label => {
-						return bus.sendCommand(
-							{role: 'catalog', cmd: 'setItemSpec'},
-							{channel, type: 'collectionSpec', source: 'ooyala-label-provider', label}
-						);
-					}));
-				}
-
-				return [];
-			})
-			.then(specs => {
-				collection.relationships = collection.relationships || {};
-
-				// Assign the relationships.
-				collection.relationships.entities = {
-					data: specs.map(spec => {
-						return {
-							type: spec.type.replace(/Spec$/, ''),
-							id: spec.resource
-						};
-					})
-				};
-
-				return collection;
-			});
+		return getChannel(channelId).then(channel => {
+			return getCollection({spec, channel, collection, labelId});
+		});
 	};
 };
 
-exports.createAssetHandler = function (bus, client, transform) {
+exports.createAssetHandler = function (bus, getChannel, client, transform) {
+	const getAsset = fetchBacklotAsset(bus, client, transform);
+
 	// Called from Oddworks core via bus.query
 	// Expects:
 	//   args.spec.asset
 	return function ooyalaAssetProvider(args) {
 		const spec = args.spec;
+		const channelId = spec.channel;
 		const asset = spec.asset || {};
 		const assetId = asset.external_id || asset.embed_code;
 
@@ -158,22 +101,8 @@ exports.createAssetHandler = function (bus, client, transform) {
 			);
 		}
 
-		return client.getAsset({assetId}).then(asset => {
-			if (asset) {
-				return transform(spec, asset);
-			}
-
-			const error = new Error(`Video not found for id "${assetId}"`);
-			error.code = 'ASSET_NOT_FOUND';
-
-			bus.broadcast({level: 'error'}, {
-				spec,
-				error,
-				code: error.code,
-				message: 'asset not found'
-			});
-
-			return Promise.reject(error);
+		return getChannel(channelId).then(channel => {
+			return getAsset({spec, channel, assetId});
 		});
 	};
 };
