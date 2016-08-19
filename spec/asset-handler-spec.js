@@ -27,12 +27,20 @@ describe('assetHandler', function () {
 		beforeAll(function (done) {
 			const bus = this.createBus();
 
+			function maybeDone() {
+				if (error && event) {
+					done();
+				}
+			}
+
 			bus.observe({level: 'error'}, function (payload) {
 				event = payload;
+				maybeDone();
 			});
 
 			const client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
 			spyOn(client, 'getAsset').and.returnValue(Promise.resolve(null));
+			spyOn(client, 'getAssetMetadata').and.returnValue(Promise.resolve(null));
 
 			const assetHandler = provider.createAssetHandler(bus, getChannel, client, noop);
 
@@ -42,7 +50,7 @@ describe('assetHandler', function () {
 				})
 				.catch(err => {
 					error = err;
-					done();
+					maybeDone();
 				});
 		});
 
@@ -67,6 +75,7 @@ describe('assetHandler', function () {
 		let error = null;
 		const asset = {ASSET: 'ASSET'};
 		const video = {VIDEO: 'VIDEO'};
+		const metadata = {METADATA: 'METADATA'};
 		const spec = {
 			channel: 'abc',
 			type: 'videoSpec',
@@ -85,6 +94,7 @@ describe('assetHandler', function () {
 
 			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
 			spyOn(client, 'getAsset').and.returnValue(Promise.resolve(asset));
+			spyOn(client, 'getAssetMetadata').and.returnValue(Promise.resolve(metadata));
 
 			transform = jasmine.createSpy('transform').and.returnValue(video);
 
@@ -111,10 +121,10 @@ describe('assetHandler', function () {
 
 		it('calls the transform', function () {
 			expect(transform).toHaveBeenCalledTimes(1);
-			expect(transform).toHaveBeenCalledWith(
-				spec, // eslint-disable-line camelcase
-				asset
-			);
+			const args = transform.calls.allArgs()[0];
+			expect(args[0]).toBe(spec);
+			expect(args[1]).toBe(asset);
+			expect(args[1].meta).toBe(metadata);
 		});
 
 		it('does not have an error', function () {
@@ -127,6 +137,7 @@ describe('assetHandler', function () {
 		let error = null;
 		const asset = {ASSET: 'ASSET'};
 		const video = {VIDEO: 'VIDEO'};
+		const metadata = {METADATA: 'METADATA'};
 		const spec = {
 			channel: 'abc',
 			type: 'videoSpec',
@@ -141,7 +152,8 @@ describe('assetHandler', function () {
 				id: 'abc',
 				secrets: {
 					backlotApiKey: 'api-key-foo',
-					backlotSecretKey: 'api-secret-bar'
+					backlotSecretKey: 'api-secret-bar',
+					skipMetadata: true
 				}
 			});
 		}
@@ -151,6 +163,7 @@ describe('assetHandler', function () {
 
 			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
 			spyOn(client, 'getAsset').and.returnValue(Promise.resolve(asset));
+			spyOn(client, 'getAssetMetadata').and.returnValue(Promise.resolve(metadata));
 
 			transform = jasmine.createSpy('transform').and.returnValue(video);
 
@@ -181,10 +194,10 @@ describe('assetHandler', function () {
 
 		it('calls the transform', function () {
 			expect(transform).toHaveBeenCalledTimes(1);
-			expect(transform).toHaveBeenCalledWith(
-				spec, // eslint-disable-line camelcase
-				asset
-			);
+			const args = transform.calls.allArgs()[0];
+			expect(args[0]).toBe(spec);
+			expect(args[1]).toBe(asset);
+			expect(args[1].meta).toEqual({});
 		});
 
 		it('does not have an error', function () {
