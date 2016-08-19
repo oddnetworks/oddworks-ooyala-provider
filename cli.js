@@ -12,6 +12,7 @@ REQUEST_METHODS.getChildLabels = '{"labelId": "STRING"}';
 REQUEST_METHODS.getAssetsByLabel = '{"labelId": "STRING"}';
 REQUEST_METHODS.getAsset = '{"assetId": "STRING"}';
 REQUEST_METHODS.getAssetStreams = '{"assetId": "STRING"}';
+REQUEST_METHODS.getAssetMetadaa = '{"assetId": "STRING"}';
 
 exports.main = function () {
 	const args = yargs
