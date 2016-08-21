@@ -170,7 +170,10 @@ describe('labelHandler', function () {
 			label
 		};
 		const assets = [];
-		const labels = [{name: 'LABEL_1'}, {name: 'LABEL_2'}];
+		const labels = [
+			{id: 'label-1', name: 'LABEL_1'},
+			{id: 'label-2', name: 'LABEL_2'}
+		];
 		const collection = {title: 'COLLECTION'};
 
 		function getChannel() {
@@ -223,12 +226,14 @@ describe('labelHandler', function () {
 			expect(setItemSpec).toHaveBeenCalledWith({
 				channel: 'abc',
 				type: 'collectionSpec',
+				id: 'spec-ooyala-label-label-1',
 				source: 'ooyala-label-provider',
 				label: labels[0]
 			});
 			expect(setItemSpec).toHaveBeenCalledWith({
 				channel: 'abc',
 				type: 'collectionSpec',
+				id: 'spec-ooyala-label-label-2',
 				source: 'ooyala-label-provider',
 				label: labels[1]
 			});
