@@ -41,6 +41,7 @@ describe('assetHandler', function () {
 			const client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
 			spyOn(client, 'getAsset').and.returnValue(Promise.resolve(null));
 			spyOn(client, 'getAssetMetadata').and.returnValue(Promise.resolve(null));
+			spyOn(client, 'getAssetStreams').and.returnValue(Promise.resolve(null));
 
 			const assetHandler = provider.createAssetHandler(bus, getChannel, client, noop);
 
@@ -76,6 +77,7 @@ describe('assetHandler', function () {
 		const asset = {ASSET: 'ASSET'};
 		const video = {VIDEO: 'VIDEO'};
 		const metadata = {METADATA: 'METADATA'};
+		const streams = {STREAMS: 'STREAMS'};
 		const spec = {
 			channel: 'abc',
 			type: 'videoSpec',
@@ -95,6 +97,7 @@ describe('assetHandler', function () {
 			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
 			spyOn(client, 'getAsset').and.returnValue(Promise.resolve(asset));
 			spyOn(client, 'getAssetMetadata').and.returnValue(Promise.resolve(metadata));
+			spyOn(client, 'getAssetStreams').and.returnValue(Promise.resolve(streams));
 
 			transform = jasmine.createSpy('transform').and.returnValue(video);
 
@@ -119,12 +122,23 @@ describe('assetHandler', function () {
 			expect(client.getAsset).toHaveBeenCalledWith({assetId: spec.asset.external_id});
 		});
 
+		it('calls client.getAssetMetadata', function () {
+			expect(client.getAssetMetadata).toHaveBeenCalledTimes(1);
+			expect(client.getAssetMetadata).toHaveBeenCalledWith({assetId: spec.asset.external_id});
+		});
+
+		it('calls client.getAssetStreams', function () {
+			expect(client.getAssetStreams).toHaveBeenCalledTimes(1);
+			expect(client.getAssetStreams).toHaveBeenCalledWith({assetId: spec.asset.external_id});
+		});
+
 		it('calls the transform', function () {
 			expect(transform).toHaveBeenCalledTimes(1);
 			const args = transform.calls.allArgs()[0];
 			expect(args[0]).toBe(spec);
 			expect(args[1]).toBe(asset);
 			expect(args[1].meta).toBe(metadata);
+			expect(args[1].streams).toBe(streams);
 		});
 
 		it('does not have an error', function () {
@@ -132,12 +146,13 @@ describe('assetHandler', function () {
 		});
 	});
 
-	describe('with Channel secrets', function () {
+	describe('with Channel secrets and skip metadaa and streams', function () {
 		let result = null;
 		let error = null;
 		const asset = {ASSET: 'ASSET'};
 		const video = {VIDEO: 'VIDEO'};
 		const metadata = {METADATA: 'METADATA'};
+		const streams = {STREAMS: 'STREAMS'};
 		const spec = {
 			channel: 'abc',
 			type: 'videoSpec',
@@ -153,7 +168,8 @@ describe('assetHandler', function () {
 				secrets: {
 					backlotApiKey: 'api-key-foo',
 					backlotSecretKey: 'api-secret-bar',
-					skipMetadata: true
+					skipMetadata: true,
+					skipStreams: true
 				}
 			});
 		}
@@ -164,6 +180,7 @@ describe('assetHandler', function () {
 			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
 			spyOn(client, 'getAsset').and.returnValue(Promise.resolve(asset));
 			spyOn(client, 'getAssetMetadata').and.returnValue(Promise.resolve(metadata));
+			spyOn(client, 'getAssetStreams').and.returnValue(Promise.resolve(streams));
 
 			transform = jasmine.createSpy('transform').and.returnValue(video);
 
@@ -192,12 +209,21 @@ describe('assetHandler', function () {
 			});
 		});
 
+		it('does not call client.getAssetMetadata', function () {
+			expect(client.getAssetMetadata).not.toHaveBeenCalled();
+		});
+
+		it('does not call client.getAssetStreams', function () {
+			expect(client.getAssetStreams).not.toHaveBeenCalled();
+		});
+
 		it('calls the transform', function () {
 			expect(transform).toHaveBeenCalledTimes(1);
 			const args = transform.calls.allArgs()[0];
 			expect(args[0]).toBe(spec);
 			expect(args[1]).toBe(asset);
 			expect(args[1].meta).toEqual({});
+			expect(args[1].streams).toEqual([]);
 		});
 
 		it('does not have an error', function () {
