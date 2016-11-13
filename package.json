@@ -7,16 +7,16 @@
     "test": "xo && jasmine"
   },
   "dependencies": {
-    "bluebird": "^3.4.1",
-    "boom": "^3.2.2",
-    "debug": "^2.3.2",
-    "request": "^2.74.0",
-    "yargs": "^4.8.1"
+    "bluebird": "~3.4.0",
+    "boom": "~4.2.0",
+    "debug": "~2.3.0",
+    "request": "~2.78.0",
+    "yargs": "~6.3.0"
   },
   "devDependencies": {
-    "jasmine": "^2.4.1",
-    "oddcast": "^2.1.0",
-    "xo": "^0.16.0"
+    "jasmine": "~2.4.0",
+    "oddcast": "~2.2.0",
+    "xo": "~0.17.0"
   },
   "repository": {
     "type": "git",
