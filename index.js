@@ -63,7 +63,7 @@ exports.createLabelHandler = function (bus, getChannel, client, transform) {
 	// Called from Oddworks core via bus.query
 	// Expects:
 	//   args.spec.label.id
-	return function ooyalaLabelProvider(args) {
+	const ooyalaLabelProvider = args => {
 		const spec = args.spec;
 		const labelId = (spec.label || {}).id;
 		const channelId = spec.channel;
@@ -81,6 +81,8 @@ exports.createLabelHandler = function (bus, getChannel, client, transform) {
 			return getCollection({spec, channel, collection, labelId});
 		});
 	};
+
+	return ooyalaLabelProvider;
 };
 
 exports.createAssetHandler = function (bus, getChannel, client, transform) {
@@ -89,7 +91,7 @@ exports.createAssetHandler = function (bus, getChannel, client, transform) {
 	// Called from Oddworks core via bus.query
 	// Expects:
 	//   args.spec.asset
-	return function ooyalaAssetProvider(args) {
+	const ooyalaAssetProvider = args => {
 		const spec = args.spec;
 		const channelId = spec.channel;
 		const asset = spec.asset || {};
@@ -105,6 +107,8 @@ exports.createAssetHandler = function (bus, getChannel, client, transform) {
 			return getAsset({spec, channel, assetId});
 		});
 	};
+
+	return ooyalaAssetProvider;
 };
 
 // options.secretKey *required
