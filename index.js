@@ -74,11 +74,8 @@ exports.createLabelHandler = function (bus, getChannel, client, transform) {
 			);
 		}
 
-		// The Oddworks collection.
-		const collection = args.object;
-
 		return getChannel(channelId).then(channel => {
-			return getCollection({spec, channel, collection, labelId});
+			return getCollection({spec, channel, labelId});
 		});
 	};
 
