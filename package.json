@@ -1,6 +1,6 @@
 {
   "name": "oddworks-ooyala-provider",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "description": "An Oddworks provider plugin for Ooyala APIs",
   "main": "index.js",
   "scripts": {
