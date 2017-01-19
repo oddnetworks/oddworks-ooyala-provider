@@ -13,6 +13,7 @@ REQUEST_METHODS.getAssetsByLabel = '{"labelId": "STRING"}';
 REQUEST_METHODS.getAsset = '{"assetId": "STRING"}';
 REQUEST_METHODS.getAssetStreams = '{"assetId": "STRING"}';
 REQUEST_METHODS.getAssetMetadata = '{"assetId": "STRING"}';
+REQUEST_METHODS.getSimilarRelated = '{"embedCode": "STRING"}';
 
 exports.main = function () {
 	const args = yargs
