@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "bluebird": "~3.4.0",
-    "boom": "~4.2.0",
     "debug": "~2.3.0",
     "request": "~2.78.0",
     "yargs": "~6.3.0"
