@@ -1,6 +1,7 @@
-/* global describe, beforeAll, it, expect, spyOn */
+/* global jasmine, describe, beforeAll, it, expect, spyOn */
 /* eslint prefer-arrow-callback: 0 */
 /* eslint-disable max-nested-callbacks */
+/* eslint-disable camelcase */
 'use strict';
 
 const Promise = require('bluebird');
@@ -66,193 +67,129 @@ describe('popularHandler', function () {
 		});
 	});
 
-	// describe('with assets', function () {
-	// 	let client;
-	// 	let setItemSpec;
-	// 	let transform;
-	// 	let result;
-	// 	let error = null;
-	// 	const spec = {
-	// 		channel: 'abc',
-	// 		type: 'collectionSpec',
-	// 		id: 'spec-ooyala-discovery-popular'
-	// 	};
-	// 	const assets = [{title: 'VIDEO_1'}, {title: 'VIDEO_2'}];
-	// 	const collection = {title: 'COLLECTION'};
+	describe('with assets', function () {
+		let client;
+		let setItemSpec;
+		let transform;
+		let result;
+		let error = null;
+		const spec = {
+			channel: 'abc',
+			type: 'collectionSpec',
+			id: 'spec-ooyala-discovery-popular'
+		};
+		const assets = [
+			{
+				title: 'VIDEO_1',
+				external_id: 'VIDEO_1'
+			},
+			{
+				title: 'VIDEO_2',
+				external_id: 'VIDEO_2'
+			}
+		];
+		const collection = {title: 'COLLECTION'};
 
-	// 	function getChannel() {
-	// 		return Promise.resolve({id: 'abc'});
-	// 	}
+		function getChannel() {
+			return Promise.resolve({id: 'abc'});
+		}
 
-	// 	beforeAll(function (done) {
-	// 		const bus = this.createBus();
+		beforeAll(function (done) {
+			const bus = this.createBus();
 
-	// 		// Mock the Oddworks setItemSpec command for the related assets (videos).
-	// 		setItemSpec = jasmine
-	// 			.createSpy('setItemSpec')
-	// 			.and.returnValues(
-	// 				Promise.resolve({type: 'videoSpec', resource: 'foo-123'}),
-	// 				Promise.resolve({type: 'videoSpec', resource: 'bar-123'})
-	// 			);
+			// Mock the Oddworks setItemSpec command for the related assets (videos).
+			setItemSpec = jasmine
+				.createSpy('setItemSpec')
+				.and.returnValues(
+					Promise.resolve(
+						{
+							type: 'videoSpec',
+							resource: 'foo-123'
+							// external_id: 'VIDEO_1'
+						}),
+					Promise.resolve(
+						{
+							type: 'videoSpec',
+							resource: 'bar-123'
+							// external_id: 'VIDEO_2'
+						})
+				);
 
-	// 		bus.commandHandler({role: 'catalog', cmd: 'setItemSpec'}, setItemSpec);
+			// fake the results of the getAsset method
+			function fakeGetAsset(args) {
+				let returnedAsset = assets[0];
+				assets.map(asset => {
+					if (args.assetId === asset.external_id) {
+						returnedAsset = asset;
+					}
+					return asset;
+				});
+				return returnedAsset;
+			}
 
-	// 		// Mock the Ooyala client methods.
-	// 		client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
-	// 		spyOn(client, 'getPopularRelated').and.returnValue(Promise.resolve(assets));
+			bus.commandHandler({role: 'catalog', cmd: 'setItemSpec'}, setItemSpec);
 
-	// 		transform = jasmine.createSpy('transform').and.returnValue(collection);
+			// Mock the Ooyala client methods.
+			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
+			spyOn(client, 'getPopularRelated').and.returnValue(Promise.resolve(assets));
+			spyOn(client, 'getAsset').and.callFake(fakeGetAsset);
 
-	// 		const popularHandler = provider.createPopularHandler(bus, getChannel, client, transform);
+			transform = jasmine.createSpy('transform').and.returnValue(collection);
 
-	// 		return popularHandler({spec})
-	// 			.then(res => {
-	// 				result = res;
-	// 			})
-	// 			.catch(err => {
-	// 				error = err;
-	// 			})
-	// 			.then(done);
-	// 	});
+			const popularHandler = provider.createPopularHandler(bus, getChannel, client, transform);
 
-	// 	it('has a result', function () {
-	// 		expect(result.title).toBe('COLLECTION');
-	// 	});
+			return popularHandler({spec})
+				.then(res => {
+					result = res;
+				})
+				.catch(err => {
+					error = err;
+				})
+				.then(done);
+		});
 
-	// 	it('does not have an error', function () {
-	// 		expect(error).toBe(null);
-	// 	});
+		it('has a result', function () {
+			expect(result.title).toBe('COLLECTION');
+		});
 
-	// 	it('sends setItemSpec commands', function () {
-	// 		expect(setItemSpec).toHaveBeenCalledTimes(2);
-	// 		expect(setItemSpec).toHaveBeenCalledWith({
-	// 			channel: 'abc',
-	// 			type: 'videoSpec',
-	// 			source: 'ooyala-asset-provider',
-	// 			asset: assets[0]
-	// 		});
-	// 		expect(setItemSpec).toHaveBeenCalledWith({
-	// 			channel: 'abc',
-	// 			type: 'videoSpec',
-	// 			source: 'ooyala-asset-provider',
-	// 			asset: assets[1]
-	// 		});
-	// 	});
+		it('does not have an error', function () {
+			expect(error).toBe(null);
+		});
 
-	// 	// it('calls client.getLabel()', function () {
-	// 	// 	expect(client.getLabel).toHaveBeenCalledTimes(1);
-	// 	// 	expect(client.getLabel).toHaveBeenCalledWith({labelId: 'foo'});
-	// 	// });
+		it('sends setItemSpec commands', function () {
+			expect(setItemSpec).toHaveBeenCalledTimes(2);
+			expect(setItemSpec).toHaveBeenCalledWith({
+				channel: 'abc',
+				type: 'videoSpec',
+				source: 'ooyala-asset-provider',
+				id: 'spec-ooyala-VIDEO_1',
+				asset: assets[0]
+			});
+			expect(setItemSpec).toHaveBeenCalledWith({
+				channel: 'abc',
+				type: 'videoSpec',
+				source: 'ooyala-asset-provider',
+				id: 'spec-ooyala-VIDEO_2',
+				asset: assets[1]
+			});
+		});
 
-	// 	// it('calls client.getAssetsByLabel()', function () {
-	// 	// 	expect(client.getAssetsByLabel).toHaveBeenCalledTimes(1);
-	// 	// 	expect(client.getAssetsByLabel).toHaveBeenCalledWith({labelId: 'foo'});
-	// 	// });
+		it('calls client.getAssets()', function () {
+			expect(client.getAsset).toHaveBeenCalledTimes(2);
+			expect(client.getAsset).toHaveBeenCalledWith({assetId: 'VIDEO_1'});
+			expect(client.getAsset).toHaveBeenCalledWith({assetId: 'VIDEO_2'});
+		});
 
-	// 	// it('calls client.getChildLabels()', function () {
-	// 	// 	expect(client.getChildLabels).toHaveBeenCalledTimes(1);
-	// 	// 	expect(client.getChildLabels).toHaveBeenCalledWith({labelId: 'foo'});
-	// 	// });
-	// });
+		// it('calls client.getAssetsByLabel()', function () {
+		// 	expect(client.getAssetsByLabel).toHaveBeenCalledTimes(1);
+		// 	expect(client.getAssetsByLabel).toHaveBeenCalledWith({labelId: 'foo'});
+		// });
 
-	// describe('with child labels', function () {
-	// 	let client;
-	// 	let setItemSpec;
-	// 	let transform;
-	// 	let result;
-	// 	let error = null;
-	// 	const label = {id: 'foo', name: 'LABEL'};
-	// 	const spec = {
-	// 		channel: 'abc',
-	// 		type: 'collectionSpec',
-	// 		id: 'spec-123',
-	// 		label
-	// 	};
-	// 	const assets = [];
-	// 	const labels = [
-	// 		{id: 'label-1', name: 'LABEL_1'},
-	// 		{id: 'label-2', name: 'LABEL_2'}
-	// 	];
-	// 	const collection = {title: 'COLLECTION'};
-
-	// 	function getChannel() {
-	// 		return Promise.resolve({id: 'abc'});
-	// 	}
-
-	// 	beforeAll(function (done) {
-	// 		const bus = this.createBus();
-
-	// 		// Mock the Oddworks setItemSpec command for the related assets (videos).
-	// 		setItemSpec = jasmine
-	// 			.createSpy('setItemSpec')
-	// 			.and.returnValues(
-	// 				Promise.resolve({type: 'collectionSpec', resource: 'foo-123'}),
-	// 				Promise.resolve({type: 'collectionSpec', resource: 'bar-123'})
-	// 			);
-
-	// 		bus.commandHandler({role: 'catalog', cmd: 'setItemSpec'}, setItemSpec);
-
-	// 		// Mock the Ooyala client methods.
-	// 		client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
-	// 		spyOn(client, 'getLabel').and.returnValue(Promise.resolve(label));
-	// 		spyOn(client, 'getAssetsByLabel').and.returnValue(Promise.resolve(assets));
-	// 		spyOn(client, 'getChildLabels').and.returnValue(Promise.resolve(labels));
-
-	// 		transform = jasmine.createSpy('transform').and.returnValue(collection);
-
-	// 		const labelHandler = provider.createLabelHandler(bus, getChannel, client, transform);
-
-	// 		return labelHandler({spec})
-	// 			.then(res => {
-	// 				result = res;
-	// 			})
-	// 			.catch(err => {
-	// 				error = err;
-	// 			})
-	// 			.then(done);
-	// 	});
-
-	// 	it('has a result', function () {
-	// 		expect(result.title).toBe('COLLECTION');
-	// 	});
-
-	// 	it('does not have an error', function () {
-	// 		expect(error).toBe(null);
-	// 	});
-
-	// 	it('sends setItemSpec commands', function () {
-	// 		expect(setItemSpec).toHaveBeenCalledTimes(2);
-	// 		expect(setItemSpec).toHaveBeenCalledWith({
-	// 			channel: 'abc',
-	// 			type: 'collectionSpec',
-	// 			id: 'spec-ooyala-label-label-1',
-	// 			source: 'ooyala-label-provider',
-	// 			label: labels[0]
-	// 		});
-	// 		expect(setItemSpec).toHaveBeenCalledWith({
-	// 			channel: 'abc',
-	// 			type: 'collectionSpec',
-	// 			id: 'spec-ooyala-label-label-2',
-	// 			source: 'ooyala-label-provider',
-	// 			label: labels[1]
-	// 		});
-	// 	});
-
-	// 	it('calls client.getLabel()', function () {
-	// 		expect(client.getLabel).toHaveBeenCalledTimes(1);
-	// 		expect(client.getLabel).toHaveBeenCalledWith({labelId: 'foo'});
-	// 	});
-
-	// 	it('calls client.getAssetsByLabel()', function () {
-	// 		expect(client.getAssetsByLabel).toHaveBeenCalledTimes(1);
-	// 		expect(client.getAssetsByLabel).toHaveBeenCalledWith({labelId: 'foo'});
-	// 	});
-
-	// 	it('calls client.getChildLabels()', function () {
-	// 		expect(client.getChildLabels).toHaveBeenCalledTimes(1);
-	// 		expect(client.getChildLabels).toHaveBeenCalledWith({labelId: 'foo'});
-	// 	});
-	// });
+		// it('calls client.getChildLabels()', function () {
+		// 	expect(client.getChildLabels).toHaveBeenCalledTimes(1);
+		// 	expect(client.getChildLabels).toHaveBeenCalledWith({labelId: 'foo'});
+		// });
+	});
 
 	// describe('with channel secrets', function () {
 	// 	let client;
