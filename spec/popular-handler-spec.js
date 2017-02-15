@@ -7,6 +7,29 @@
 const Promise = require('bluebird');
 const provider = require('../');
 
+const assets = [
+	{
+		title: 'VIDEO_1',
+		external_id: 'VIDEO_1'
+	},
+	{
+		title: 'VIDEO_2',
+		external_id: 'VIDEO_2'
+	}
+];
+
+// fake the results of the getAsset method
+function fakeGetAsset(args) {
+	let returnedAsset = assets[0];
+	assets.map(asset => {
+		if (args.assetId === asset.external_id) {
+			returnedAsset = asset;
+		}
+		return asset;
+	});
+	return returnedAsset;
+}
+
 describe('popularHandler', function () {
 	function noop() {}
 
@@ -78,16 +101,6 @@ describe('popularHandler', function () {
 			type: 'collectionSpec',
 			id: 'spec-ooyala-discovery-popular'
 		};
-		const assets = [
-			{
-				title: 'VIDEO_1',
-				external_id: 'VIDEO_1'
-			},
-			{
-				title: 'VIDEO_2',
-				external_id: 'VIDEO_2'
-			}
-		];
 		const collection = {title: 'COLLECTION'};
 
 		function getChannel() {
@@ -101,31 +114,9 @@ describe('popularHandler', function () {
 			setItemSpec = jasmine
 				.createSpy('setItemSpec')
 				.and.returnValues(
-					Promise.resolve(
-						{
-							type: 'videoSpec',
-							resource: 'foo-123'
-							// external_id: 'VIDEO_1'
-						}),
-					Promise.resolve(
-						{
-							type: 'videoSpec',
-							resource: 'bar-123'
-							// external_id: 'VIDEO_2'
-						})
+					Promise.resolve({type: 'videoSpec', resource: 'foo-123'}),
+					Promise.resolve({type: 'videoSpec', resource: 'bar-123'})
 				);
-
-			// fake the results of the getAsset method
-			function fakeGetAsset(args) {
-				let returnedAsset = assets[0];
-				assets.map(asset => {
-					if (args.assetId === asset.external_id) {
-						returnedAsset = asset;
-					}
-					return asset;
-				});
-				return returnedAsset;
-			}
 
 			bus.commandHandler({role: 'catalog', cmd: 'setItemSpec'}, setItemSpec);
 
@@ -179,127 +170,101 @@ describe('popularHandler', function () {
 			expect(client.getAsset).toHaveBeenCalledWith({assetId: 'VIDEO_1'});
 			expect(client.getAsset).toHaveBeenCalledWith({assetId: 'VIDEO_2'});
 		});
-
-		// it('calls client.getAssetsByLabel()', function () {
-		// 	expect(client.getAssetsByLabel).toHaveBeenCalledTimes(1);
-		// 	expect(client.getAssetsByLabel).toHaveBeenCalledWith({labelId: 'foo'});
-		// });
-
-		// it('calls client.getChildLabels()', function () {
-		// 	expect(client.getChildLabels).toHaveBeenCalledTimes(1);
-		// 	expect(client.getChildLabels).toHaveBeenCalledWith({labelId: 'foo'});
-		// });
 	});
 
-	// describe('with channel secrets', function () {
-	// 	let client;
-	// 	let setItemSpec;
-	// 	let transform;
-	// 	let result;
-	// 	let error = null;
-	// 	const label = {id: 'foo', name: 'LABEL'};
-	// 	const spec = {
-	// 		channel: 'abc',
-	// 		type: 'collectionSpec',
-	// 		id: 'spec-123',
-	// 		label
-	// 	};
-	// 	const assets = [{title: 'VIDEO_1'}, {title: 'VIDEO_2'}];
-	// 	const labels = [];
-	// 	const collection = {title: 'COLLECTION'};
+	describe('with channel secrets', function () {
+		let client;
+		let setItemSpec;
+		let transform;
+		let result;
+		let error = null;
+		const spec = {
+			channel: 'abc',
+			type: 'collectionSpec',
+			id: 'spec-123'
+		};
+		const collection = {title: 'COLLECTION'};
 
-	// 	function getChannel() {
-	// 		return Promise.resolve({
-	// 			id: 'abc',
-	// 			secrets: {
-	// 				backlotApiKey: 'api-key-foo',
-	// 				backlotSecretKey: 'api-secret-bar'
-	// 			}
-	// 		});
-	// 	}
+		function getChannel() {
+			return Promise.resolve({
+				id: 'abc',
+				secrets: {
+					backlotApiKey: 'api-key-foo',
+					backlotSecretKey: 'api-secret-bar'
+				}
+			});
+		}
 
-	// 	beforeAll(function (done) {
-	// 		const bus = this.createBus();
+		beforeAll(function (done) {
+			const bus = this.createBus();
 
-	// 		// Mock the Oddworks setItemSpec command for the related assets (videos).
-	// 		setItemSpec = jasmine
-	// 			.createSpy('setItemSpec')
-	// 			.and.returnValues(
-	// 				Promise.resolve({type: 'videoSpec', resource: 'foo-123'}),
-	// 				Promise.resolve({type: 'videoSpec', resource: 'bar-123'})
-	// 			);
+			// Mock the Oddworks setItemSpec command for the related assets (videos).
+			setItemSpec = jasmine
+				.createSpy('setItemSpec')
+				.and.returnValues(
+					Promise.resolve({type: 'videoSpec', resource: 'foo-123'}),
+					Promise.resolve({type: 'videoSpec', resource: 'bar-123'})
+				);
 
-	// 		bus.commandHandler({role: 'catalog', cmd: 'setItemSpec'}, setItemSpec);
+			bus.commandHandler({role: 'catalog', cmd: 'setItemSpec'}, setItemSpec);
 
-	// 		// Mock the Ooyala client methods.
-	// 		client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
-	// 		spyOn(client, 'getLabel').and.returnValue(Promise.resolve(label));
-	// 		spyOn(client, 'getAssetsByLabel').and.returnValue(Promise.resolve(assets));
-	// 		spyOn(client, 'getChildLabels').and.returnValue(Promise.resolve(labels));
+			// Mock the Ooyala client methods.
+			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
+			spyOn(client, 'getPopularRelated').and.returnValue(Promise.resolve(assets));
+			spyOn(client, 'getAsset').and.callFake(fakeGetAsset);
 
-	// 		transform = jasmine.createSpy('transform').and.returnValue(collection);
+			transform = jasmine.createSpy('transform').and.returnValue(collection);
 
-	// 		const labelHandler = provider.createLabelHandler(bus, getChannel, client, transform);
+			const popularHandler = provider.createPopularHandler(bus, getChannel, client, transform);
 
-	// 		return labelHandler({spec})
-	// 			.then(res => {
-	// 				result = res;
-	// 			})
-	// 			.catch(err => {
-	// 				error = err;
-	// 			})
-	// 			.then(done);
-	// 	});
+			return popularHandler({spec})
+				.then(res => {
+					result = res;
+				})
+				.catch(err => {
+					error = err;
+				})
+				.then(done);
+		});
 
-	// 	it('has a result', function () {
-	// 		expect(result.title).toBe('COLLECTION');
-	// 	});
+		it('has a result', function () {
+			expect(result.title).toBe('COLLECTION');
+		});
 
-	// 	it('does not have an error', function () {
-	// 		expect(error).toBe(null);
-	// 	});
+		it('does not have an error', function () {
+			expect(error).toBe(null);
+		});
 
-	// 	it('sends setItemSpec commands', function () {
-	// 		expect(setItemSpec).toHaveBeenCalledTimes(2);
-	// 		expect(setItemSpec).toHaveBeenCalledWith({
-	// 			channel: 'abc',
-	// 			type: 'videoSpec',
-	// 			source: 'ooyala-asset-provider',
-	// 			asset: assets[0]
-	// 		});
-	// 		expect(setItemSpec).toHaveBeenCalledWith({
-	// 			channel: 'abc',
-	// 			type: 'videoSpec',
-	// 			source: 'ooyala-asset-provider',
-	// 			asset: assets[1]
-	// 		});
-	// 	});
+		it('sends setItemSpec commands', function () {
+			expect(setItemSpec).toHaveBeenCalledTimes(2);
+			expect(setItemSpec).toHaveBeenCalledWith({
+				channel: 'abc',
+				type: 'videoSpec',
+				source: 'ooyala-asset-provider',
+				id: 'spec-ooyala-VIDEO_1',
+				asset: assets[0]
+			});
+			expect(setItemSpec).toHaveBeenCalledWith({
+				channel: 'abc',
+				type: 'videoSpec',
+				source: 'ooyala-asset-provider',
+				id: 'spec-ooyala-VIDEO_2',
+				asset: assets[1]
+			});
+		});
 
-	// 	it('calls client.getLabel()', function () {
-	// 		expect(client.getLabel).toHaveBeenCalledTimes(1);
-	// 		expect(client.getLabel).toHaveBeenCalledWith({
-	// 			labelId: 'foo',
-	// 			apiKey: 'api-key-foo',
-	// 			secretKey: 'api-secret-bar'
-	// 		});
-	// 	});
-
-	// 	it('calls client.getAssetsByLabel()', function () {
-	// 		expect(client.getAssetsByLabel).toHaveBeenCalledTimes(1);
-	// 		expect(client.getAssetsByLabel).toHaveBeenCalledWith({
-	// 			labelId: 'foo',
-	// 			apiKey: 'api-key-foo',
-	// 			secretKey: 'api-secret-bar'
-	// 		});
-	// 	});
-
-	// 	it('calls client.getChildLabels()', function () {
-	// 		expect(client.getChildLabels).toHaveBeenCalledTimes(1);
-	// 		expect(client.getChildLabels).toHaveBeenCalledWith({
-	// 			labelId: 'foo',
-	// 			apiKey: 'api-key-foo',
-	// 			secretKey: 'api-secret-bar'
-	// 		});
-	// 	});
-	// });
+		it('calls client.getAsset())', function () {
+			expect(client.getAsset).toHaveBeenCalledTimes(2);
+			expect(client.getAsset).toHaveBeenCalledWith({
+				assetId: 'VIDEO_1',
+				apiKey: 'api-key-foo',
+				secretKey: 'api-secret-bar'
+			});
+			expect(client.getAsset).toHaveBeenCalledWith({
+				assetId: 'VIDEO_2',
+				apiKey: 'api-key-foo',
+				secretKey: 'api-secret-bar'
+			});
+		});
+	});
 });
