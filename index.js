@@ -7,6 +7,7 @@ const defaultCollectionTransform = require('./lib/default-collection-transform')
 const createChannelCache = require('./lib/create-channel-cache');
 const fetchLabelCollection = require('./lib/fetch-label-collection');
 const fetchBacklotAsset = require('./lib/fetch-backlot-asset');
+const fetchPopularCollection = require('./lib/fetch-popular-collection.js');
 
 const DEFAULTS = {
 	baseUrl: 'http://api.ooyala.com',
@@ -106,6 +107,21 @@ exports.createAssetHandler = function (bus, getChannel, client, transform) {
 	};
 
 	return ooyalaAssetProvider;
+};
+
+exports.createPopularHandler = function (bus, getChannel, client, transform) {
+	const getPopular = fetchPopularCollection(bus, client, transform);
+	// bus.broadcast({level: 'error'}, {code: 'poop'});
+	const ooyalaPopularProvider = args => {
+		const spec = args.spec;
+		const channelId = spec.channel;
+
+		return getChannel(channelId).then(channel => {
+			return getPopular({spec, channel});
+		});
+	};
+
+	return ooyalaPopularProvider;
 };
 
 // options.secretKey *required
