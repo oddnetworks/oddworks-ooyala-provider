@@ -7,8 +7,9 @@ const defaultCollectionTransform = require('./lib/default-collection-transform')
 const createChannelCache = require('./lib/create-channel-cache');
 const fetchLabelCollection = require('./lib/fetch-label-collection');
 const fetchBacklotAsset = require('./lib/fetch-backlot-asset');
-const fetchPopularCollection = require('./lib/fetch-popular-collection.js');
-const fetchTrendingCollection = require('./lib/fetch-trending-collection.js');
+const fetchPopularCollection = require('./lib/fetch-popular-collection');
+const fetchSimilarCollection = require('./lib/fetch-similar-collection');
+const fetchTrendingCollection = require('./lib/fetch-trending-collection');
 
 const DEFAULTS = {
 	baseUrl: 'http://api.ooyala.com',
@@ -132,7 +133,8 @@ exports.createSimilarHandler = function (bus, getChannel, client, transform) {
 	//   args.spec.asset
 	const ooyalaSimilarProvider = args => {
 		const spec = args.spec;
-		const assetId = args.assetId;
+		const asset = spec.asset || {};
+		const assetId = asset.external_id || asset.embed_code;
 		const channelId = spec.channel;
 
 		if (!assetId || typeof assetId !== 'string') {
