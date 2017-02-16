@@ -7,28 +7,18 @@
 const Promise = require('bluebird');
 const provider = require('../');
 
-const assets = [
-	{
-		title: 'VIDEO_1',
-		external_id: 'VIDEO_1'
-	},
-	{
-		title: 'VIDEO_2',
-		external_id: 'VIDEO_2'
-	}
-];
-
-// fake the results of the getAsset method
-function fakeGetAsset(args) {
-	let returnedAsset = assets[0];
-	assets.map(asset => {
-		if (args.assetId === asset.external_id) {
-			returnedAsset = asset;
+const assets = {
+	results: [
+		{
+			title: 'VIDEO_1',
+			external_id: 'VIDEO_1'
+		},
+		{
+			title: 'VIDEO_2',
+			external_id: 'VIDEO_2'
 		}
-		return asset;
-	});
-	return returnedAsset;
-}
+	]
+};
 
 describe('trendingHandler', function () {
 	function noop() {}
@@ -123,7 +113,6 @@ describe('trendingHandler', function () {
 			// Mock the Ooyala client methods.
 			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
 			spyOn(client, 'getTrendingRelated').and.returnValue(Promise.resolve(assets));
-			spyOn(client, 'getAsset').and.callFake(fakeGetAsset);
 
 			transform = jasmine.createSpy('transform').and.returnValue(collection);
 
@@ -154,21 +143,15 @@ describe('trendingHandler', function () {
 				type: 'videoSpec',
 				source: 'ooyala-asset-provider',
 				id: 'spec-ooyala-VIDEO_1',
-				asset: assets[0]
+				asset: assets.results[0]
 			});
 			expect(setItemSpec).toHaveBeenCalledWith({
 				channel: 'abc',
 				type: 'videoSpec',
 				source: 'ooyala-asset-provider',
 				id: 'spec-ooyala-VIDEO_2',
-				asset: assets[1]
+				asset: assets.results[1]
 			});
-		});
-
-		it('calls client.getAssets()', function () {
-			expect(client.getAsset).toHaveBeenCalledTimes(2);
-			expect(client.getAsset).toHaveBeenCalledWith({assetId: 'VIDEO_1'});
-			expect(client.getAsset).toHaveBeenCalledWith({assetId: 'VIDEO_2'});
 		});
 	});
 
@@ -211,7 +194,6 @@ describe('trendingHandler', function () {
 			// Mock the Ooyala client methods.
 			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
 			spyOn(client, 'getTrendingRelated').and.returnValue(Promise.resolve(assets));
-			spyOn(client, 'getAsset').and.callFake(fakeGetAsset);
 
 			transform = jasmine.createSpy('transform').and.returnValue(collection);
 
@@ -242,29 +224,23 @@ describe('trendingHandler', function () {
 				type: 'videoSpec',
 				source: 'ooyala-asset-provider',
 				id: 'spec-ooyala-VIDEO_1',
-				asset: assets[0]
+				asset: assets.results[0]
 			});
 			expect(setItemSpec).toHaveBeenCalledWith({
 				channel: 'abc',
 				type: 'videoSpec',
 				source: 'ooyala-asset-provider',
 				id: 'spec-ooyala-VIDEO_2',
-				asset: assets[1]
+				asset: assets.results[1]
 			});
 		});
 
-		it('calls client.getAsset())', function () {
-			expect(client.getAsset).toHaveBeenCalledTimes(2);
-			expect(client.getAsset).toHaveBeenCalledWith({
-				assetId: 'VIDEO_1',
-				apiKey: 'api-key-foo',
-				secretKey: 'api-secret-bar'
-			});
-			expect(client.getAsset).toHaveBeenCalledWith({
-				assetId: 'VIDEO_2',
-				apiKey: 'api-key-foo',
-				secretKey: 'api-secret-bar'
-			});
+		it('calls client.getTrendingRelated)', function () {
+			expect(client.getTrendingRelated).toHaveBeenCalledTimes(1);
+			const expected = Object.create(null);
+			expected.apiKey = 'api-key-foo';
+			expected.secretKey = 'api-secret-bar';
+			expect(client.getTrendingRelated).toHaveBeenCalledWith(expected);
 		});
 	});
 });
