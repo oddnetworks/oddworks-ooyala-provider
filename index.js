@@ -124,6 +124,31 @@ exports.createPopularHandler = function (bus, getChannel, client, transform) {
 	return ooyalaPopularProvider;
 };
 
+exports.createSimilarHandler = function (bus, getChannel, client, transform) {
+	const getSimilar = fetchSimilarCollection(bus, client, transform);
+
+	// Called from Oddworks core via bus.query
+	// Expects:
+	//   args.spec.asset
+	const ooyalaSimilarProvider = args => {
+		const spec = args.spec;
+		const assetId = args.assetId;
+		const channelId = spec.channel;
+
+		if (!assetId || typeof assetId !== 'string') {
+			throw new Error(
+				'ooyala-discovery-similar-provider spec.assetId String is not available'
+			);
+		}
+
+		return getChannel(channelId).then(channel => {
+			return getSimilar({spec, channel});
+		});
+	};
+
+	return ooyalaSimilarProvider;
+};
+
 exports.createTrendingHandler = function (bus, getChannel, client, transform) {
 	const getTrending = fetchTrendingCollection(bus, client, transform);
 	const ooyalaTrendingProvider = args => {
