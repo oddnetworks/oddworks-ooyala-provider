@@ -7,6 +7,9 @@ const defaultCollectionTransform = require('./lib/default-collection-transform')
 const createChannelCache = require('./lib/create-channel-cache');
 const fetchLabelCollection = require('./lib/fetch-label-collection');
 const fetchBacklotAsset = require('./lib/fetch-backlot-asset');
+const fetchPopularCollection = require('./lib/fetch-popular-collection');
+const fetchSimilarCollection = require('./lib/fetch-similar-collection');
+const fetchTrendingCollection = require('./lib/fetch-trending-collection');
 
 const DEFAULTS = {
 	baseUrl: 'http://api.ooyala.com',
@@ -106,6 +109,60 @@ exports.createAssetHandler = function (bus, getChannel, client, transform) {
 	};
 
 	return ooyalaAssetProvider;
+};
+
+exports.createPopularHandler = function (bus, getChannel, client, transform) {
+	const getPopular = fetchPopularCollection(bus, client, transform);
+	const ooyalaPopularProvider = args => {
+		const spec = args.spec;
+		const channelId = spec.channel;
+
+		return getChannel(channelId).then(channel => {
+			return getPopular({spec, channel});
+		});
+	};
+
+	return ooyalaPopularProvider;
+};
+
+exports.createSimilarHandler = function (bus, getChannel, client, transform) {
+	const getSimilar = fetchSimilarCollection(bus, client, transform);
+
+	// Called from Oddworks core via bus.query
+	// Expects:
+	//   args.spec.asset
+	const ooyalaSimilarProvider = args => {
+		const spec = args.spec;
+		const asset = spec.asset || {};
+		const assetId = asset.external_id || asset.embed_code;
+		const channelId = spec.channel;
+
+		if (!assetId || typeof assetId !== 'string') {
+			throw new Error(
+				'ooyala-discovery-similar-provider spec.assetId String is not available'
+			);
+		}
+
+		return getChannel(channelId).then(channel => {
+			return getSimilar({spec, channel});
+		});
+	};
+
+	return ooyalaSimilarProvider;
+};
+
+exports.createTrendingHandler = function (bus, getChannel, client, transform) {
+	const getTrending = fetchTrendingCollection(bus, client, transform);
+	const ooyalaTrendingProvider = args => {
+		const spec = args.spec;
+		const channelId = spec.channel;
+
+		return getChannel(channelId).then(channel => {
+			return getTrending({spec, channel});
+		});
+	};
+
+	return ooyalaTrendingProvider;
 };
 
 // options.secretKey *required
