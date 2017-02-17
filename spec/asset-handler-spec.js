@@ -166,10 +166,12 @@ describe('assetHandler', function () {
 			return Promise.resolve({
 				id: 'abc',
 				secrets: {
-					backlotApiKey: 'api-key-foo',
-					backlotSecretKey: 'api-secret-bar',
-					skipMetadata: true,
-					skipStreams: true
+					ooyala: {
+						backlotApiKey: 'api-key-foo',
+						backlotSecretKey: 'api-secret-bar',
+						skipMetadata: true,
+						skipStreams: true
+					}
 				}
 			});
 		}
