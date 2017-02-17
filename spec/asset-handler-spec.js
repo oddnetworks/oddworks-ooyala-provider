@@ -5,6 +5,7 @@
 
 const Promise = require('bluebird');
 const provider = require('../');
+const fetchPlayableUrl = require('../lib/fetch-playable-url');
 
 describe('assetHandler', function () {
 	function noop() {}
@@ -226,6 +227,95 @@ describe('assetHandler', function () {
 			expect(args[1]).toBe(asset);
 			expect(args[1].meta).toEqual({});
 			expect(args[1].streams).toEqual([]);
+		});
+
+		it('does not have an error', function () {
+			expect(error).toBe(null);
+		});
+	});
+
+	describe('fetch playable stream', function () {
+		let result = null;
+		let error = null;
+		const asset = {ASSET: 'ASSET', embed_code: 'EMBED_CODE'}; // eslint-disable-line camelcase
+		const video = {VIDEO: 'VIDEO'};
+		const metadata = {METADATA: 'METADATA'};
+		const streams = {STREAMS: 'STREAMS'};
+		const spec = {
+			channel: 'abc',
+			type: 'videoSpec',
+			id: 'spec-123',
+			getPlayableUrl: true,
+			asset: {external_id: 'foo', embed_code: 'EMBED_CODE'} // eslint-disable-line camelcase
+		};
+
+		const playableUrls = {authorization_data: { // eslint-disable-line camelcase
+			EMBED_CODE: {
+				streams: [{url: {data: 'aHR0cDovL3NvbWUtdXJsLmNvbS9wbGF5ZXIvaXBob25lL2Zvbw=='}}]
+			}
+		}};
+
+		let transform;
+		let client;
+
+		function getChannel() {
+			return Promise.resolve({
+				id: 'abc',
+				secrets: {
+					ooyala: {
+						backlotApiKey: 'api-key-foo',
+						backlotSecretKey: 'api-secret-bar',
+						skipMetadata: true,
+						skipStreams: true
+					}
+				}
+			});
+		}
+
+		beforeAll(function (done) {
+			const bus = this.createBus();
+
+			client = provider.createClient({apiKey: 'foo', secretKey: 'bar'});
+			spyOn(client, 'getAsset').and.returnValue(Promise.resolve(asset));
+			spyOn(client, 'getAssetMetadata').and.returnValue(Promise.resolve(metadata));
+			spyOn(client, 'getAssetStreams').and.returnValue(Promise.resolve(streams));
+			spyOn(fetchPlayableUrl, 'makeRequest').and.returnValue(Promise.resolve(playableUrls));
+
+			transform = jasmine.createSpy('transform').and.returnValue(video);
+
+			const assetHandler = provider.createAssetHandler(bus, getChannel, client, transform);
+
+			return assetHandler({spec})
+				.then(res => {
+					result = res;
+				})
+				.catch(err => {
+					error = err;
+				})
+				.then(done);
+		});
+
+		it('has a result', function () {
+			expect(result.VIDEO).toBe('VIDEO');
+		});
+
+		it('makes request for url', function () {
+			expect(fetchPlayableUrl.makeRequest).toHaveBeenCalledTimes(1);
+			const params = fetchPlayableUrl.makeRequest.calls.allArgs()[0][0];
+			expect(params.method).toBe('GET');
+			expect(params.url).toBe('http://player.ooyala.com/sas/player_api/v1/authorization/embed_code/api-key-foo/EMBED_CODE?device=roku&domain=www.ooyala.com&supportedFormats=m3u8');
+		});
+
+		it('calls the transform', function () {
+			expect(transform).toHaveBeenCalledTimes(1);
+			const args = transform.calls.allArgs()[0];
+			expect(args[0]).toBe(spec);
+			expect(args[1]).toBe(asset);
+			expect(args[1].meta).toEqual({});
+			expect(args[1].streams).toEqual([{
+				label: 'hls-playable',
+				url: 'http://some-url.com/player/appletv/foo'
+			}]);
 		});
 
 		it('does not have an error', function () {
