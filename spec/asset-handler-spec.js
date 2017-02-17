@@ -75,21 +75,36 @@ describe('assetHandler', function () {
 	describe('with Ooyala asset', function () {
 		let result = null;
 		let error = null;
-		const asset = {ASSET: 'ASSET'};
+		const asset = {ASSET: 'ASSET', embed_code: 'EMBED_CODE'}; // eslint-disable-line camelcase
 		const video = {VIDEO: 'VIDEO'};
 		const metadata = {METADATA: 'METADATA'};
-		const streams = {STREAMS: 'STREAMS'};
+		const streams = [];
 		const spec = {
 			channel: 'abc',
 			type: 'videoSpec',
 			id: 'spec-123',
-			asset: {external_id: 'foo'} // eslint-disable-line camelcase
+			asset: {external_id: 'foo', embed_code: 'EMBED_CODE'} // eslint-disable-line camelcase
 		};
+
+		const playableUrls = {authorization_data: { // eslint-disable-line camelcase
+			EMBED_CODE: {
+				streams: [{url: {data: 'aHR0cDovL3NvbWUtdXJsLmNvbS9wbGF5ZXIvaXBob25lL2Zvbw=='}}]
+			}
+		}};
+
 		let transform;
 		let client;
 
 		function getChannel() {
-			return Promise.resolve({id: 'abc'});
+			return Promise.resolve({
+				id: 'abc',
+				secrets: {
+					ooyala: {
+						backlotApiKey: 'api-key-foo',
+						backlotSecretKey: 'api-secret-bar'
+					}
+				}
+			});
 		}
 
 		beforeAll(function (done) {
@@ -99,6 +114,7 @@ describe('assetHandler', function () {
 			spyOn(client, 'getAsset').and.returnValue(Promise.resolve(asset));
 			spyOn(client, 'getAssetMetadata').and.returnValue(Promise.resolve(metadata));
 			spyOn(client, 'getAssetStreams').and.returnValue(Promise.resolve(streams));
+			spyOn(fetchPlayableUrl, 'makeRequest').and.returnValue(Promise.resolve(playableUrls));
 
 			transform = jasmine.createSpy('transform').and.returnValue(video);
 
@@ -120,17 +136,29 @@ describe('assetHandler', function () {
 
 		it('calls client.getAsset', function () {
 			expect(client.getAsset).toHaveBeenCalledTimes(1);
-			expect(client.getAsset).toHaveBeenCalledWith({assetId: spec.asset.external_id});
+			expect(client.getAsset).toHaveBeenCalledWith({
+				assetId: spec.asset.external_id,
+				apiKey: 'api-key-foo',
+				secretKey: 'api-secret-bar'
+			});
 		});
 
 		it('calls client.getAssetMetadata', function () {
 			expect(client.getAssetMetadata).toHaveBeenCalledTimes(1);
-			expect(client.getAssetMetadata).toHaveBeenCalledWith({assetId: spec.asset.external_id});
+			expect(client.getAssetMetadata).toHaveBeenCalledWith({
+				assetId: spec.asset.external_id,
+				apiKey: 'api-key-foo',
+				secretKey: 'api-secret-bar'
+			});
 		});
 
 		it('calls client.getAssetStreams', function () {
 			expect(client.getAssetStreams).toHaveBeenCalledTimes(1);
-			expect(client.getAssetStreams).toHaveBeenCalledWith({assetId: spec.asset.external_id});
+			expect(client.getAssetStreams).toHaveBeenCalledWith({
+				assetId: spec.asset.external_id,
+				apiKey: 'api-key-foo',
+				secretKey: 'api-secret-bar'
+			});
 		});
 
 		it('calls the transform', function () {
@@ -171,7 +199,8 @@ describe('assetHandler', function () {
 						backlotApiKey: 'api-key-foo',
 						backlotSecretKey: 'api-secret-bar',
 						skipMetadata: true,
-						skipStreams: true
+						skipStreams: true,
+						skipPlayableUrl: true
 					}
 				}
 			});
@@ -184,6 +213,7 @@ describe('assetHandler', function () {
 			spyOn(client, 'getAsset').and.returnValue(Promise.resolve(asset));
 			spyOn(client, 'getAssetMetadata').and.returnValue(Promise.resolve(metadata));
 			spyOn(client, 'getAssetStreams').and.returnValue(Promise.resolve(streams));
+			spyOn(fetchPlayableUrl, 'makeRequest');
 
 			transform = jasmine.createSpy('transform').and.returnValue(video);
 
@@ -218,6 +248,10 @@ describe('assetHandler', function () {
 
 		it('does not call client.getAssetStreams', function () {
 			expect(client.getAssetStreams).not.toHaveBeenCalled();
+		});
+
+		it('does not call for the playable URL', function () {
+			expect(fetchPlayableUrl.makeRequest).not.toHaveBeenCalled();
 		});
 
 		it('calls the transform', function () {
