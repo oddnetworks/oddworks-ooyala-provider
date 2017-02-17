@@ -276,8 +276,10 @@ describe('labelHandler', function () {
 			return Promise.resolve({
 				id: 'abc',
 				secrets: {
-					backlotApiKey: 'api-key-foo',
-					backlotSecretKey: 'api-secret-bar'
+					ooyala: {
+						backlotApiKey: 'api-key-foo',
+						backlotSecretKey: 'api-secret-bar'
+					}
 				}
 			});
 		}
