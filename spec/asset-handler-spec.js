@@ -101,7 +101,8 @@ describe('assetHandler', function () {
 				secrets: {
 					ooyala: {
 						backlotApiKey: 'api-key-foo',
-						backlotSecretKey: 'api-secret-bar'
+						backlotSecretKey: 'api-secret-bar',
+						providerId: 'provider-id'
 					}
 				}
 			});
@@ -198,6 +199,7 @@ describe('assetHandler', function () {
 					ooyala: {
 						backlotApiKey: 'api-key-foo',
 						backlotSecretKey: 'api-secret-bar',
+						providerId: 'provider-id',
 						skipMetadata: true,
 						skipStreams: true,
 						skipPlayableUrl: true
@@ -299,6 +301,7 @@ describe('assetHandler', function () {
 					ooyala: {
 						backlotApiKey: 'api-key-foo',
 						backlotSecretKey: 'api-secret-bar',
+						providerId: 'provider-id',
 						skipMetadata: true,
 						skipStreams: true
 					}
@@ -337,7 +340,7 @@ describe('assetHandler', function () {
 			expect(fetchPlayableUrl.makeRequest).toHaveBeenCalledTimes(1);
 			const params = fetchPlayableUrl.makeRequest.calls.allArgs()[0][0];
 			expect(params.method).toBe('GET');
-			expect(params.url).toBe('http://player.ooyala.com/sas/player_api/v1/authorization/embed_code/api-key-foo/EMBED_CODE?device=roku&domain=www.ooyala.com&supportedFormats=m3u8');
+			expect(params.url).toBe('http://player.ooyala.com/sas/player_api/v1/authorization/embed_code/provider-id/EMBED_CODE?device=roku&domain=www.ooyala.com&supportedFormats=m3u8');
 		});
 
 		it('calls the transform', function () {
