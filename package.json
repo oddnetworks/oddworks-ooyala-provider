@@ -7,15 +7,15 @@
     "test": "xo && jasmine"
   },
   "dependencies": {
-    "bluebird": "~3.4.0",
-    "debug": "~2.3.0",
-    "request": "~2.78.0",
-    "yargs": "~6.3.0"
+    "bluebird": "~3.5.0",
+    "debug": "~2.6.0",
+    "request": "~2.81.0",
+    "yargs": "~7.0.0"
   },
   "devDependencies": {
-    "jasmine": "~2.4.0",
+    "jasmine": "~2.5.0",
     "oddcast": "~2.2.0",
-    "xo": "~0.17.0"
+    "xo": "~0.18.0"
   },
   "repository": {
     "type": "git",
