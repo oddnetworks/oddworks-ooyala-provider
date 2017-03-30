@@ -38,6 +38,10 @@
     "esnext": true,
     "envs": [
       "node"
-    ]
+    ],
+    "rules": {
+      "no-use-extend-native/no-use-extend-native": 0,
+      "capitalized-comments": 0
+    }
   }
 }
