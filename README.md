@@ -1,5 +1,7 @@
 # Oddworks Ooyala Provider
 
+[![pipeline status](https://gitlab.com/oddnetworks/oddworks/ooyala-provider/badges/master/pipeline.svg)](https://gitlab.com/oddnetworks/oddworks/ooyala-provider/commits/master)
+
 An Ooyala provider plugin for the Oddworks content server.
 
 Installation
@@ -12,12 +14,12 @@ For full Ooyala Backlot API documentation see [support.ooyala.com/developers/doc
 
 Oddworks Server Integration
 ---------------------------
-The Oddworks-Ooyala provider is designed to be integrated with an Oddworks server [catalog](https://github.com/oddnetworks/oddworks/tree/master/lib/services/catalog), specifically as a [provider](https://github.com/oddnetworks/oddworks/tree/master/lib/services/catalog#providers). To initialize the plugin in your server:
+The Oddworks-Ooyala provider is designed to be integrated with an Oddworks server [catalog](https://gitlab.com/oddnetworks/oddworks/core/tree/master/lib/services/catalog), specifically as a [provider](https://gitlab.com/oddnetworks/oddworks/core/tree/master/lib/services/catalog#providers). To initialize the plugin in your server:
 
 ```JavaScript
 const ooyalaProvider = require('oddworks-ooyala-provider');
 
-// See https://github.com/oddnetworks/oddworks/tree/master/lib/services/catalog#patterns
+// See https://gitlab.com/oddnetworks/oddworks/core/tree/master/lib/services/catalog#patterns
 // for more information regarding an Oddcast Bus.
 const bus = createMyOddcastBus();
 

@@ -1,6 +1,6 @@
 {
   "name": "oddworks-ooyala-provider",
-  "version": "1.9.4",
+  "version": "1.9.5",
   "description": "An Oddworks provider plugin for Ooyala APIs",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oddnetworks/oddworks-ooyala-provider.git"
+    "url": "git+https://gitlab.com/oddnetworks/oddworks/ooyala-provider.git"
   },
   "keywords": [
     "Oddworks",
@@ -31,9 +31,9 @@
   "author": "Oddworks Inc.",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/oddnetworks/oddworks-ooyala-provider/issues"
+    "url": "https://gitlab.com/oddnetworks/oddworks/ooyala-provider/issues"
   },
-  "homepage": "https://github.com/oddnetworks/oddworks-ooyala-provider#readme",
+  "homepage": "https://gitlab.com/oddnetworks/oddworks/ooyala-provider#readme",
   "xo": {
     "esnext": true,
     "envs": [
