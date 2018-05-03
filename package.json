@@ -7,9 +7,9 @@
     "test": "xo && jasmine"
   },
   "dependencies": {
-    "bluebird": "~3.5.0",
-    "debug": "~2.6.0",
-    "request": "~2.81.0",
+    "bluebird": "~3.5.1",
+    "debug": "~3.1.0",
+    "request": "~2.85.0",
     "yargs": "~7.0.0"
   },
   "devDependencies": {
