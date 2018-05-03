@@ -1,20 +1,20 @@
 {
   "name": "oddworks-ooyala-provider",
-  "version": "1.9.5",
+  "version": "1.9.6",
   "description": "An Oddworks provider plugin for Ooyala APIs",
   "main": "index.js",
   "scripts": {
     "test": "xo && jasmine"
   },
   "dependencies": {
-    "bluebird": "~3.5.0",
-    "debug": "~2.6.0",
-    "request": "~2.81.0",
+    "bluebird": "~3.5.1",
+    "debug": "~3.1.0",
+    "request": "~2.85.0",
     "yargs": "~7.0.0"
   },
   "devDependencies": {
     "jasmine": "~2.5.0",
-    "oddcast": "~2.2.0",
+    "oddcast": "~2.2.2",
     "xo": "~0.18.0"
   },
   "repository": {
